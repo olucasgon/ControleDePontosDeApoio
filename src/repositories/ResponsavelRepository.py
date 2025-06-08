@@ -17,13 +17,12 @@ def add_responsavel(responsavel: Responsavel) -> Responsavel:
     db.session.commit()
     return responsavel
 
-def update_responsavel(responsavel_id: int, nome: str, cpf: str, telefone: str) -> Responsavel:
-
+def update_responsavel(responsavel_id: int, codigo: str, pessoa_id: int, pontoapoio_id: int) -> Responsavel:
     responsavel = db.session.query(Responsavel).get(responsavel_id)
     if responsavel:
-        responsavel.nome = nome
-        responsavel.cpf = cpf
-        responsavel.telefone = telefone
+        responsavel.codigo = codigo
+        responsavel.pessoa_id = pessoa_id
+        responsavel.pontoapoio_id = pontoapoio_id
         db.session.commit()
     return responsavel
 
