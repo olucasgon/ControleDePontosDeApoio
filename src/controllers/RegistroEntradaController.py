@@ -1,70 +1,78 @@
+import re
 from flask_restful import Resource, abort
 from flask_apispec import marshal_with, use_kwargs
 from flask_apispec.views import MethodResource
-from marshmallow import Schema, fields, validates, ValidationError
+from marshmallow import Schema, ValidationError, fields, validates
 from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.orm.exc import UnmappedInstanceError
-from src.services.RegistroEntradaService import get_registros_entrada, get_registro_entrada, add_registro_entrada, update_registro_entrada,delete_registro_entrada
+from src.services.RegistroEntradaService import  getRegistrosEntrada, getRegistroEntrada, addRegistroEntrada, updateRegistroEntrada, deleteRegistroEntrada
+class RegistroEntradaResponseSchema(Schema):
+    id = fields.Int()
+    pessoa_id = fields.Int()
+    pontoapoio_id = fields.Int()
+    entrada = fields.DateTime()
+    saida = fields.DateTime()
 
-class RegistroEntradaSchema(Schema):
-    id = fields.Int(dump_only=True)
-    pessoa_id = fields.Int(required=True)
-    pontoapoio_id = fields.Int(required=True)
-    entrada = fields.DateTime(required=True, format='%Y-%m-%d %H:%M:%S')
-    saida = fields.DateTime(allow_none=True, format='%Y-%m-%d %H:%M:%S')
+class RegistroEntradaRequestSchema(Schema):
+    id = fields.Int()
+    pessoa_id = fields.Int()
+    pontoapoio_id = fields.Int()
+    entrada = fields.DateTime()
+    saida = fields.DateTime()
 
-    @validates('entrada')
+    @validates("entrada")
     def validate_entrada(self, value):
-        if value is None:
-            raise ValidationError("A data de entrada é obrigatória.")
-
+        if not isinstance(value, str):
+            raise ValidationError("Entrada must be a valid datetime string.")
+        
 
 class RegistroEntradaItem(MethodResource, Resource):
-    @marshal_with(RegistroEntradaSchema)
+    @marshal_with(RegistroEntradaResponseSchema)
     def get(self, registro_id):
         try:
-            registro = get_registro_entrada(registro_id)
-            if not registro:
-                abort(404, message="Registro não encontrado.")
+            registro = getRegistroEntrada(registro_id)
+            if registro is None:
+                abort(404, message="Registro de Entrada not found")
             return registro, 200
         except OperationalError:
-            abort(500, message="Erro interno no servidor.")
+            abort(500, message="Database connection error")
 
     def delete(self, registro_id):
         try:
-            delete_registro_entrada(registro_id)
-            return "", 204
+            deleteRegistroEntrada(registro_id)
+            return "Registro de Entrada deleted successfully", 204
         except UnmappedInstanceError:
-            abort(404, message="Registro não encontrado.")
+            abort(404, message="Registro de Entrada not found")
         except (OperationalError, IntegrityError):
-            abort(500, message="Erro interno no servidor.")
+            abort(500, message="Database error")
 
-    @use_kwargs(RegistroEntradaSchema, location="form")
-    @marshal_with(RegistroEntradaSchema)
-    def put(self, registro_entrada_id, **kwargs):
+    @use_kwargs(RegistroEntradaRequestSchema, location={"form"})
+    @marshal_with(RegistroEntradaResponseSchema)
+    def put(self, registro_id, **kwargs):
         try:
-            registro = update_registro_entrada(id=registro_entrada_id, **kwargs)
-            return registro, 200
+            updated_registro = updateRegistroEntrada(registro_id, **kwargs)
+            return updated_registro, 200
+        except ValidationError as e:
+            abort(400, message=str(e))
         except (OperationalError, IntegrityError):
-            abort(500, message="Erro interno no servidor.")
-
+            abort(500, message="Database error")
 
 class RegistroEntradaList(MethodResource, Resource):
-    @marshal_with(RegistroEntradaSchema(many=True))
+    @marshal_with(RegistroEntradaResponseSchema(many=True))
     def get(self):
         try:
-            return get_registros_entrada(), 200
+            registros = getRegistrosEntrada()
+            return registros, 200
         except OperationalError:
-            abort(500, message="Erro interno no servidor.")
+            abort(500, message="Database connection error")
 
-    @use_kwargs(RegistroEntradaSchema, location="form")
-    @marshal_with(RegistroEntradaSchema)
+    @use_kwargs(RegistroEntradaRequestSchema, location={"form"})
+    @marshal_with(RegistroEntradaResponseSchema)
     def post(self, **kwargs):
         try:
-            registro = add_registro_entrada(**kwargs)
-            return registro, 201
-        except IntegrityError as err:
-            abort(400, message=f"Erro de integridade: {str(err.orig)}")
-        except OperationalError:
-            abort(500, message="Erro interno no servidor.")
-
+            new_registro = addRegistroEntrada(**kwargs)
+            return new_registro, 201
+        except ValidationError as e:
+            abort(400, message=str(e))
+        except (OperationalError, IntegrityError):
+            abort(500, message="Database error")

@@ -6,7 +6,7 @@ def getPessoas():
 
 
 def getPessoa(pessoa_id: int):
-  return get_pessoa(pessoa_id)
+    return get_pessoa(pessoa_id)
 
 def addPessoa(id: int, nome: str, cpf: str, telefone: str, pontoapoio_id: int):
     pessoa = Pessoa()
@@ -15,7 +15,6 @@ def addPessoa(id: int, nome: str, cpf: str, telefone: str, pontoapoio_id: int):
     pessoa.cpf = cpf
     pessoa.telefone = telefone
     pessoa.pontoapoio_id = pontoapoio_id
-
     return add_pessoa(pessoa)
 
 def updatePessoa(id: int, nome: str, cpf: str, telefone: str, pontoapoio_id: int):

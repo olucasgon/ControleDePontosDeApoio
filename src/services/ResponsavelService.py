@@ -18,3 +18,6 @@ def addResponsavel(id: int, codigo: str, pessoa_id: int, ponto_apoio_id: int):
 
 def updateResponsavel(id: int, codigo: str, pessoa_id: int, ponto_apoio_id: int):
     return update_responsavel(id, codigo, pessoa_id, ponto_apoio_id)
+
+def deleteResponsavel(responsavel_id: int):
+    return delete_responsavel(responsavel_id)
