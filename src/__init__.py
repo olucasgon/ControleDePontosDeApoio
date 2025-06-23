@@ -6,8 +6,7 @@ from src.entities.Base import db
 def create_app() -> Flask:
 
     app = Flask(__name__)
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:54321@localhost:3306/controlepontoapoio'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:54321@localhost:5432/controlepontoapoio'
 
     db.init_app(app)
 

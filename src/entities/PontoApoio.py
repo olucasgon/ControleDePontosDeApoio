@@ -15,4 +15,3 @@ class PontoApoio(Base):
     Recurso = relationship("Recurso", back_populates="PontoApoio")
     Responsavel = relationship("Responsavel", back_populates="PontoApoio")
     RegistroEntrada = relationship("RegistroEntrada", back_populates="PontoApoio")
-    RequisicaoRecursos = relationship("RequisicaoRecurso", back_populates="PontoApoio")

@@ -12,12 +12,14 @@ class PontoApoioResponseSchema(Schema):
     nome = fields.Str()
     latitude = fields.Float()
     longitude = fields.Float()
+    capacidade = fields.Int()
 
 class PontoApoioRequestSchema(Schema):
     id = fields.Int()
     nome = fields.Str()
     latitude = fields.Float()
     longitude = fields.Float()
+    capacidade = fields.Int()
 
     @validates("nome")
     def validate_name(self, value):
@@ -56,7 +58,7 @@ class PontoApoioItem(MethodResource, Resource):
         except (OperationalError, IntegrityError):
             abort(500, message="Database error")
 
-    @use_kwargs(PontoApoioRequestSchema, location={"form"})
+    @use_kwargs(PontoApoioRequestSchema, location="json")
     @marshal_with(PontoApoioResponseSchema)
     def put(self, ponto_apoio_id, **kwargs):
         try:
@@ -73,7 +75,7 @@ class PontoApoioList(MethodResource, Resource):
         except OperationalError:
             abort(500, message="Database connection error")
     
-    @use_kwargs(PontoApoioRequestSchema, location={"form"})
+    @use_kwargs(PontoApoioRequestSchema, location="json")
     @marshal_with(PontoApoioResponseSchema)
     def post(self, **kwargs):
         try:

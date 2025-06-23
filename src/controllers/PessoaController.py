@@ -40,6 +40,11 @@ class PessoaRequestSchema(Schema):
         if not re.match(r'^\d{10,11}$', value):
             raise ValidationError("Telefone must be a string of 10 or 11 digits.")
         
+    @validates('pontoapoio_id')
+    def validate_pontoapoio_id(self, value):
+        if not isinstance(value, int) or value <= 0:
+            raise ValidationError("Ponto Apoio ID must be a positive integer.")
+        
 
 class PessoaItem(MethodResource, Resource):
     @marshal_with(PessoaResponseSchema)
@@ -61,7 +66,7 @@ class PessoaItem(MethodResource, Resource):
         except (OperationalError, IntegrityError):
             abort(500, message="Database error")
 
-    @use_kwargs(PessoaRequestSchema, location=("form"))
+    @use_kwargs(PessoaRequestSchema, location="json")
     @marshal_with(PessoaResponseSchema)
     def put(self, pessoa_id, **kwargs):
         try:
@@ -79,7 +84,7 @@ class PessoaList(MethodResource, Resource):
         except OperationalError:
             abort(500, message="Database connection error")
         
-    @use_kwargs(PessoaRequestSchema, location=("form"))
+    @use_kwargs(PessoaRequestSchema, location="json")
     @marshal_with(PessoaResponseSchema)
     def post(self, **kwargs):
         try:

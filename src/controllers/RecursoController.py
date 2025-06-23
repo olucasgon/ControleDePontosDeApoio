@@ -12,14 +12,14 @@ class RecursoResponseSchema(Schema):
     id = fields.Int()
     nome = fields.Str()
     quantidade = fields.Int()
-    ponto_apoio_id = fields.Int()
+    pontoapoio_id = fields.Int()
     
 
 class RecursoRequestSchema(Schema):
     id = fields.Int()
     nome = fields.Str()
     quantidade = fields.Int()
-    ponto_apoio_id = fields.Int()
+    pontoapoio_id = fields.Int()
 
     @validates("nome")
     def validate_nome(self, value):
@@ -32,6 +32,11 @@ class RecursoRequestSchema(Schema):
     def validate_quantidade(self, value):
         if value < 0:
             raise ValidationError("Quantidade must be a non-negative integer.")
+        
+    @validates('pontoapoio_id')
+    def validate_pontoapoio_id(self, value):
+        if not isinstance(value, int) or value <= 0:
+            raise ValidationError("Ponto Apoio ID must be a positive integer.")
         
 class RecursoItem(MethodResource, Resource):
     @marshal_with(RecursoResponseSchema)
@@ -53,7 +58,7 @@ class RecursoItem(MethodResource, Resource):
         except (OperationalError, IntegrityError):
             abort(500, message="Database connection error")
 
-    @use_kwargs(RecursoRequestSchema, location={"form"})
+    @use_kwargs(RecursoRequestSchema, location="json")
     @marshal_with(RecursoResponseSchema)
     def put(self, recurso_id, **kwargs):
         try:
@@ -75,7 +80,7 @@ class RecursoList(MethodResource, Resource):
         except OperationalError:
             abort(500, message="Database connection error")
 
-    @use_kwargs(RecursoRequestSchema, location={"form"})
+    @use_kwargs(RecursoRequestSchema, location="json")
     @marshal_with(RecursoResponseSchema)
     def post(self, **kwargs):
         try:

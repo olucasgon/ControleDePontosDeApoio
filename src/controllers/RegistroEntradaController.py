@@ -1,30 +1,46 @@
+
 import re
 from flask_restful import Resource, abort
 from flask_apispec import marshal_with, use_kwargs
 from flask_apispec.views import MethodResource
-from marshmallow import Schema, ValidationError, fields, validates
+from marshmallow import Schema, ValidationError, fields, validates, validates_schema
 from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.orm.exc import UnmappedInstanceError
-from src.services.RegistroEntradaService import  getRegistrosEntrada, getRegistroEntrada, addRegistroEntrada, updateRegistroEntrada, deleteRegistroEntrada
+from src.services.RegistroEntradaService import getRegistrosEntrada, getRegistroEntrada, addRegistroEntrada, updateRegistroEntrada, deleteRegistroEntrada
+
+
 class RegistroEntradaResponseSchema(Schema):
     id = fields.Int()
     pessoa_id = fields.Int()
     pontoapoio_id = fields.Int()
     entrada = fields.DateTime()
-    saida = fields.DateTime()
+    saida = fields.DateTime(allow_none=True)
+
 
 class RegistroEntradaRequestSchema(Schema):
     id = fields.Int()
-    pessoa_id = fields.Int()
-    pontoapoio_id = fields.Int()
-    entrada = fields.DateTime()
-    saida = fields.DateTime()
+    pessoa_id = fields.Int(required=True)
+    pontoapoio_id = fields.Int(required=True)
+    entrada = fields.DateTime(required=True)
+    saida = fields.DateTime(allow_none=True)
 
-    @validates("entrada")
-    def validate_entrada(self, value):
-        if not isinstance(value, str):
-            raise ValidationError("Entrada must be a valid datetime string.")
-        
+    @validates("pessoa_id")
+    def validate_pessoa_id(self, value):
+        if not isinstance(value, int) or value <= 0:
+            raise ValidationError("Pessoa ID must be a positive integer.")
+
+    @validates("pontoapoio_id")
+    def validate_pontoapoio_id(self, value):
+        if not isinstance(value, int) or value <= 0:
+            raise ValidationError("Ponto Apoio ID must be a positive integer.")
+
+    @validates_schema
+    def validate_dates(self, data, **kwargs):
+        entrada = data.get("entrada")
+        saida = data.get("saida")
+        if saida and entrada and saida < entrada:
+            raise ValidationError("Saída must be after Entrada.", field_name="saida")
+
 
 class RegistroEntradaItem(MethodResource, Resource):
     @marshal_with(RegistroEntradaResponseSchema)
@@ -46,7 +62,7 @@ class RegistroEntradaItem(MethodResource, Resource):
         except (OperationalError, IntegrityError):
             abort(500, message="Database error")
 
-    @use_kwargs(RegistroEntradaRequestSchema, location={"form"})
+    @use_kwargs(RegistroEntradaRequestSchema, location="json")
     @marshal_with(RegistroEntradaResponseSchema)
     def put(self, registro_id, **kwargs):
         try:
@@ -57,6 +73,7 @@ class RegistroEntradaItem(MethodResource, Resource):
         except (OperationalError, IntegrityError):
             abort(500, message="Database error")
 
+
 class RegistroEntradaList(MethodResource, Resource):
     @marshal_with(RegistroEntradaResponseSchema(many=True))
     def get(self):
@@ -66,7 +83,7 @@ class RegistroEntradaList(MethodResource, Resource):
         except OperationalError:
             abort(500, message="Database connection error")
 
-    @use_kwargs(RegistroEntradaRequestSchema, location={"form"})
+    @use_kwargs(RegistroEntradaRequestSchema, location="json")
     @marshal_with(RegistroEntradaResponseSchema)
     def post(self, **kwargs):
         try:

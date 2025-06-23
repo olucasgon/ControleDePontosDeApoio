@@ -5,20 +5,32 @@ def getRecursos():
     return get_recursos()
 
 def getRecurso(recurso_id: int):
+    recurso = get_recurso(recurso_id)
+    if not recurso:
+        raise ValueError(f"Recurso com ID {recurso_id} não encontrado.")
     return get_recurso(recurso_id)
 
-def addRecurso(id: int, nome: str, quantidade: int, ponto_apoio_id: int):
+def addRecurso(nome: str, quantidade: int, pontoapoio_id: int):
+    if quantidade < 0:
+        raise ValueError("Quantidade não pode ser negativa.")
+
     recurso = Recurso()
-    recurso.id = id
     recurso.nome = nome
     recurso.quantidade = quantidade
-    recurso.ponto_apoio_id = ponto_apoio_id
+    recurso.pontoapoio_id = pontoapoio_id
 
     return add_recurso(recurso)
 
-def updateRecurso(id: int, nome: str, quantidade: int, ponto_apoio_id: int):
-    return update_recurso(id, nome, quantidade, ponto_apoio_id)
+def updateRecurso(id: int, nome: str, quantidade: int, pontoapoio_id: int):
+    if quantidade < 0:
+        raise ValueError("Quantidade não pode ser negativa.")
+    recurso = get_recurso(id)
+    if not recurso:
+        raise ValueError("Recurso não encontrado.")
+    return update_recurso(id, nome, quantidade, pontoapoio_id)
 
 def deleteRecurso(recurso_id: int):
+    recurso = get_recurso(recurso_id)
+    if not recurso:
+        raise ValueError("Recurso não encontrado.")
     return delete_recurso(recurso_id)
-

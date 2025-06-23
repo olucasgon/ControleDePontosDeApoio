@@ -1,46 +1,45 @@
-CREATE DATABASE `controlepontoapoio`;
+CREATE DATABASE controlepontoapoio;
 
-create table PontoApoio (
-    id int auto_increment primary key,
-    nome varchar(100) not null unique,
-    latitude decimal(9,6) not null,
-    longitude decimal(9,6) not null,
-    capacidade int not null
+CREATE TABLE "PontoApoio" (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL UNIQUE,
+    latitude DECIMAL(9,6) NOT NULL,
+    longitude DECIMAL(9,6) NOT NULL,
+    capacidade INT NOT NULL
 );
 
-create table Pessoa (
-    id int auto_increment primary key,
-    nome varchar(100) not null,
-    cpf varchar(14) not null unique,
-    telefone varchar(20),
-    pontoapoio_id int,
-    foreign key (pontoapoio_id) references PontoApoio(id)
+CREATE TABLE "Pessoa" (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    cpf VARCHAR(14) NOT NULL UNIQUE,
+    telefone VARCHAR(20),
+    pontoapoio_id INT,
+    CONSTRAINT "Pessoa_PontoApoio_fk" FOREIGN KEY (pontoapoio_id) REFERENCES "PontoApoio"(id)
 );
 
-create table Recurso (
-    id int auto_increment primary key,
-    nome varchar(50) not null,
-    quantidade int not null,
-    pontoapoio_id int not null,
-    foreign key (pontoapoio_id) references PontoApoio(id)
+CREATE TABLE "Recurso" (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(50) NOT NULL,
+    quantidade INT NOT NULL,
+    pontoapoio_id INT NOT NULL,
+    CONSTRAINT "Recurso_PontoApoio_fk" FOREIGN KEY (pontoapoio_id) REFERENCES "PontoApoio"(id)
 );
 
-create table Responsavel (
-    id int auto_increment primary key,
-    codigo varchar(25) not null unique,
-    pessoa_id int not null,
-    pontoapoio_id int not null,
-    foreign key (pontoapoio_id) references PontoApoio(id),
-    foreign key (pessoa_id) references Pessoa(id)
+CREATE TABLE "Responsavel" (
+    id SERIAL PRIMARY KEY,
+    codigo VARCHAR(25) NOT NULL UNIQUE,
+    pessoa_id INT NOT NULL,
+    pontoapoio_id INT NOT NULL,
+    CONSTRAINT "Responsavel_PontoApoio_fk" FOREIGN KEY (pontoapoio_id) REFERENCES "PontoApoio"(id),
+    CONSTRAINT "Responsavel_Pessoa_fk" FOREIGN KEY (pessoa_id) REFERENCES "Pessoa"(id)
 );
 
-create table RegistroEntrada (
-    id int auto_increment primary key,
-    pessoa_id int not null,
-    pontoapoio_id int not null,
-    entrada datetime not null,
-    saida datetime,
-    foreign key (pessoa_id) references Pessoa(id),
-    foreign key (pontoapoio_id) references PontoApoio(id)
+CREATE TABLE "RegistroEntrada" (
+    id SERIAL PRIMARY KEY,
+    pessoa_id INT NOT NULL,
+    pontoapoio_id INT NOT NULL,
+    entrada TIMESTAMP NOT NULL,
+    saida TIMESTAMP,
+    CONSTRAINT "RegistroEntrada_Pessoa_fk" FOREIGN KEY (pessoa_id) REFERENCES "Pessoa"(id),
+    CONSTRAINT "RegistroEntrada_PontoApoio_fk" FOREIGN KEY (pontoapoio_id) REFERENCES "PontoApoio"(id)
 );
-
